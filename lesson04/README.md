@@ -46,7 +46,8 @@ yfrepo/nodeapp   0.0.1     125b0a3721d1   10 hours ago   1.12GB
 
 
 Link to the docker-hub repo: 
-https://hub.docker.com/repository/docker/yfrepo/nodeapp/general
+https://hub.docker.com/r/yfrepo/nodeapp/tags
+
 
 
 
