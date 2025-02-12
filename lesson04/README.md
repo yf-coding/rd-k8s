@@ -29,7 +29,7 @@ $ sudo docker push  yfrepo/nodeapp:0.0.1
 ```
 
 ```
-$ sudo docker push  yfrepo/nodeapp:0.0.2
+$ sudo docker tag nodeapp:0.0.2 yfrepo/nodeapp:0.0.2
 
 $ sudo docker push  yfrepo/nodeapp:0.0.2
 ```
