@@ -1,11 +1,11 @@
-FROM nginx:1.27.4 as build
+FROM node:20.18.3 as build
 
 WORKDIR /app
 COPY package.json server.js /app/
-RUN apt update -y && apt install npm -y && npm install
+RUN npm install
 
 
-FROM nginx:alpine3.21 as main
+FROM node:20.18.3-alpine as main
 
 COPY --from=build /app /
 EXPOSE 4000
