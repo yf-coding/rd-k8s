@@ -1,9 +1,8 @@
-FROM node
+FROM nginx:1.27.4
 
 WORKDIR /app
 COPY package.json server.js /app/
-RUN npm install
-# COPY . /app
+RUN apt update -y && apt install npm -y && npm install
 EXPOSE 4000
 
 CMD ["node", "server.js"]
