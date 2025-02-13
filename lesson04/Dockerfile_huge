@@ -2,7 +2,7 @@ FROM node:20.18.3
 
 WORKDIR /app
 COPY package.json server.js /app/
-RUN apt update -y && apt install npm -y && npm install
+RUN npm install
 EXPOSE 4000
 
 CMD ["node", "server.js"]
