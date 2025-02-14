@@ -56,18 +56,6 @@ $ sudo docker tag nodeapp:0.0.2 yfrepo/nodeapp:0.0.2
 
 $ sudo docker push  yfrepo/nodeapp:0.0.2
 ```
-
-
-```
-$ sudo docker image ls
-REPOSITORY       TAG       IMAGE ID       CREATED        SIZE
-nodeapp          0.0.2     5da945931a31   10 hours ago   161MB
-yfrepo/nodeapp   0.0.2     5da945931a31   10 hours ago   161MB
-nodeapp          0.0.1     125b0a3721d1   10 hours ago   1.12GB
-yfrepo/nodeapp   0.0.1     125b0a3721d1   10 hours ago   1.12GB
-```
-
-
 Link to the docker-hub repo: 
 https://hub.docker.com/r/yfrepo/nodeapp/tags
 
@@ -78,7 +66,7 @@ https://hub.docker.com/r/yfrepo/nodeapp/tags
 
 Local images:
 ```
- sudo docker images
+$ sudo docker images
 REPOSITORY       TAG       IMAGE ID       CREATED        SIZE
 nodeapp          0.0.2     5da945931a31   23 hours ago   161MB
 yfrepo/nodeapp   0.0.2     5da945931a31   23 hours ago   161MB
