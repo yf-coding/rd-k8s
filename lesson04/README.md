@@ -1,10 +1,33 @@
 # Lesson 4.
+## Ubuntu based Dockerfile:
+```
+$ cat Dockerfile_huge
+FROM node:20.18.3
 
+WORKDIR /app
+COPY package.json server.js /app/
+RUN npm install
+EXPOSE 4000
+
+```
 Build an image with redandant components:
 ```
 $ sudo docker build -t nodeapp:0.0.1 -f Dockerfile_huge .
 ```
 
+## Optimization of a docker image with multistage build
+```
+$ cat Dockerfile_multistage
+FROM node:20.18.3 as build
+WORKDIR /app
+COPY package.json server.js /app/
+RUN npm install
+
+FROM node:20.18.3-alpine as main
+COPY --from=build /app /
+EXPOSE 4000
+ENTRYPOINT ["node", "server.js"]
+```
 Build a minimized image with multistage build:
 ```
 $ sudo docker build -t nodeapp:0.0.2 -f Dockerfile_multistage .
