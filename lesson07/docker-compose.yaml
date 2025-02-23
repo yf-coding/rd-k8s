@@ -1,0 +1,118 @@
+version: "3"
+
+services:   # Services definitions. Services to be run within containers.
+  spark-iceberg:   # Spark service. The main worker service in our system which logs to be tracked. 
+    image: tabulario/spark-iceberg   # Docker image of the container
+    container_name: spark-iceberg   
+    networks:     # define networks to be attached to the service (containers)
+      iceberg_net:
+    depends_on:   # list of services must run before this service stats
+      - rest
+      - minio
+      - fluentd-loki
+    logging:      # defines how logging of this service will work. it this case it runs with the fluend driver and the logging deamon.
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: log_container_fluentd.logs
+    volumes:      # volumes attached to the service to store Jupiter notebooks
+      - ./warehouse:/home/iceberg/warehouse
+      - ./notebooks:/home/iceberg/notebooks/notebooks
+    environment:   # definition of container's environment variables by passing the local system variables
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    ports:        # defenition of the port fowarding from the host OS to the container
+      - 8888:8888
+      - 8080:8080
+      - 10000:10000
+      - 10001:10001
+  rest:
+    image: apache/iceberg-rest-fixture
+    container_name: iceberg-rest
+    networks:
+      iceberg_net:
+    ports:
+      - 8181:8181
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - CATALOG_WAREHOUSE=${CATALOG_WAREHOUSE}
+      - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
+      - CATALOG_S3_ENDPOINT=${CATALOG_S3_ENDPOINT}
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_DOMAIN=${MINIO_DOMAIN}
+    networks:
+      iceberg_net:
+        aliases:
+          - warehouse.minio
+    ports:
+      - 9001:9001
+      - 9000:9000
+    command: ["server", "/data", "--console-address", ":9001"]   # the command to be run when the container starts
+  mc:
+    depends_on:
+      - minio
+    image: minio/mc
+    container_name: mc
+    networks:
+      iceberg_net:
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    # the definition of the entry script to be excuted when the container starts.
+    entrypoint: |
+      /bin/sh -c "
+      until (/usr/bin/mc config host add minio ${CATALOG_S3_ENDPOINT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc rm -r --force minio/warehouse;
+      /usr/bin/mc mb minio/warehouse;
+      /usr/bin/mc policy set public minio/warehouse;
+      tail -f /dev/null
+      "
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    networks:
+      - iceberg_net
+  fluentd-loki:
+    build:
+      context: ./fluentd-loki
+      dockerfile: Dockerfile
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - ./fluentd-loki/fluentd.conf:/fluentd/etc/fluent.conf:ro
+    networks:
+      - iceberg_net
+    depends_on: 
+      - loki
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - iceberg_net
+    ports:
+      - "7030:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_DASHBOARD_DEFAULT_HOME_DASHBOARD_PATH=${GF_DASHBOARD_DEFAULT_HOME_DASHBOARD_PATH}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+    depends_on:
+      - loki
+
+# defintion of the networks to be used by the containers. in this case there is one bridged network
+networks:
+  iceberg_net:
+     driver: bridge
