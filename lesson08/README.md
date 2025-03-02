@@ -1,12 +1,8 @@
 # Lesson 8
 
 ```
-# Creating a namespace
-$ microk8s.kubectl create namespace lesson8
-namespace/lesson8 created
-
 # Applying the deployment configs (Crating a deployment and Deploying services)
-$ microk8s.kubectl apply -f deployment.yaml -n lesson8
+$ microk8s.kubectl apply -f deployment.yaml
 deployment.apps/flask-app created
 service/flask-app-service created
 
