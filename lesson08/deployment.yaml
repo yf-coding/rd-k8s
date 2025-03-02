@@ -1,8 +1,15 @@
+apiVersion: v1       # Api version
+kind: Namespace      # Defines Entity type to be created
+metadata:            # metadata of the Namespace entity to be created
+  name: lesson8      # Defines the namespace name
+  
+---  # Object separator
 # Deployment defintion
 apiVersion: apps/v1                              # specifies the API version used for defining a resource in a manifest. v1 means it is a stable version of this API.
 kind: Deployment                                 # defines the object to apply the dfinitions
 metadata:                                        # metadata of the deployment
   name: flask-app                                # name of the dployment
+  namespace: lesson8                             # Namespace in which the Deployment will be applied
 spec:                                            # specifications of the deployment
   replicas: 5                                    # the number of replicas of pods
   selector:                                      # define how the Deployment obj identifies which Pods it should manage.
@@ -18,12 +25,13 @@ spec:                                            # specifications of the deploym
         image: yfrepo/simple-flask-app:latest    # image of the conatiner
         ports:                                   # Defines the ports that the container exposes.
         - containerPort: 5000                    # Specifies that the container listens on port 5000.
----                                              # Object separator. I must be present when there are resource defintions in one yaml file
+---  # Object separator. I must be present when there are resource defintions in one yaml file
 # Service devinition
 apiVersion: v1                                   # Specifies the API version for the resource.
 kind: Service                                    # Defines the type of Kubernetes resource.
 metadata:                                        # Provides metadata about the resource, like its name, labels, and annotations.
   name: flask-app-service                        # `flask-app-service` - The name assigned to the Service.
+  namespace: lesson8                             # Namespace in which the Service will be deployed
 spec:                                            # Defines the specification for the Service like behavior or configuration.
   selector:                                      # Determines the Pods this Service will routing traffic to.
     app: flask-app                               # Selects Pods with this label to be associated with the Service.
